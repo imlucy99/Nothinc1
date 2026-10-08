@@ -34,7 +34,7 @@ html, body {
     display: flex;
     align-items: center;
     gap: 12px;
-    width: 800px;
+    width: 860px;
     padding: 16px 14px;
     margin: 20px;
     background: #1b1b1f !important;
@@ -44,7 +44,6 @@ html, body {
     transform-origin: bottom right;
 }
 
-/* tombol samping (dekoratif) */
 .btns {
     display: flex;
     flex-direction: column;
@@ -70,137 +69,64 @@ html, body {
 .screen {
     position: relative;
     flex: 1;
-    padding: 10px 14px 14px;
-    background: #050507;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    height: 396px;
+    padding: 8px;
+    background: #000;
     border: 3px solid #0c0c0f;
     border-radius: 14px;
     overflow: hidden;
 }
 
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 30px;
-    padding: 0 150px;
-}
-
-.main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 340px;
-}
-
-/* ===== GAUGE ===== */
-.gauge {
-    position: relative;
-    width: 340px;
-    height: 340px;
-    flex: none;
-}
-.gauge svg { width: 100%; height: 100%; display: block; }
-
-.needle {
-    transform-origin: 150px 150px;
-    transition: transform 0.14s linear;
-}
-.hud.sweeping .needle { transition-duration: 0.75s; transition-timing-function: ease-in-out; }
-
-.speed-arc { transition: stroke-dasharray 0.2s linear; }
-.hud.sweeping .speed-arc { transition-duration: 0.75s; transition-timing-function: ease-in-out; }
-
-.gauge .tick-label {
-    font-family: var(--font);
-    font-weight: 800;
-    font-size: 20px;
-    fill: var(--ink);
-}
-.gauge .tick-label.on-red { fill: #fff; }
-
-#rpm-gauge.redline .redzone { animation: blink 0.18s steps(2) infinite; }
-@keyframes blink { 50% { opacity: 0.35; } }
-
-/* isi tengah gauge */
-.center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 150px;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-.brand {
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.3em;
-    color: #d9d9df;
-    font-style: italic;
-}
-.speed-text {
-    font-family: Consolas, 'Courier New', monospace;
-    font-size: 62px;
-    font-weight: 800;
-    line-height: 1;
-    margin-top: 2px;
-}
-.speed-text .dim { color: rgba(255, 255, 255, 0.2); }
-.speed-text .bright { color: #fff; }
-.unit { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #9a9aa2; margin-top: 2px; }
-
-.gear-row {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-top: 6px;
-    padding-top: 5px;
-    border-top: 1px solid #34343b;
-    width: 100px;
-    justify-content: center;
-}
-.gear-main { font-size: 28px; font-weight: 800; color: var(--face); line-height: 1; }
-.lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #9a9aa2; }
-
 /* ===== KOLOM SAMPING ===== */
 .side {
-    width: 130px;
+    width: 150px;
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     z-index: 1;
 }
 
-/* tile kuning (kiri) */
+/* tile kuning */
 .ytile {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     background: var(--face);
-    border: 2px solid #0b0b0d;
-    border-radius: 8px;
-    padding: 4px 10px;
+    border: 2px solid #000;
+    border-radius: 6px;
+    padding: 2px 10px 4px;
     color: var(--ink);
+    transition: background 0.2s ease, color 0.2s ease;
 }
-.ytile .lbl { color: rgba(0, 0, 0, 0.65); font-size: 10px; }
-.ytile .val {
-    font-family: Consolas, 'Courier New', monospace;
-    font-size: 26px;
+.row { display: flex; align-items: center; gap: 6px; }
+.ytile .row { align-items: flex-start; gap: 4px; }
+.ytile .v {
+    font-size: 46px;
     font-weight: 800;
-    line-height: 1.1;
-    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
 }
-.ytile .val small { font-size: 12px; margin-left: 2px; }
+.ytile .v.sm { font-size: 32px; padding-top: 8px; }
+.ytile .u { font-size: 14px; font-weight: 800; margin-top: 5px; }
+.sub {
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-top: 1px;
+}
+.ytile.warn   { background: #ff9100; }
+.ytile.danger { background: var(--red); color: #fff; }
 
-.segs { display: flex; gap: 2px; margin-top: 4px; }
-.seg { flex: 1; height: 4px; border-radius: 1px; background: rgba(0, 0, 0, 0.18); }
-.seg.active { background: var(--ink); }
-
-/* ===== INDIKATOR ===== */
+/* ===== INDIKATOR (tile kanan) ===== */
 .icon-item {
     --c: var(--dim);
     color: var(--c);
@@ -214,28 +140,133 @@ html, body {
 .icon-item.tile {
     flex: 1;
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    background: var(--panel);
-    border: 2px solid var(--line);
-    border-radius: 8px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2px 10px 4px;
+    background: var(--face);
+    border: 2px solid #000;
+    border-radius: 6px;
+    color: var(--ink);
 }
-.icon-item.tile span { font-size: 14px; font-weight: 800; letter-spacing: 0.1em; }
+.icon-item.tile .row { gap: 8px; }
+.icon-item.tile .st { font-size: 26px; font-weight: 800; line-height: 1; }
+.icon-item.tile .st::after { content: attr(data-off); }
+.icon-item.tile[data-off] .st::after { content: attr(data-off); }
 
-/* tile menyala penuh seperti panel kuning */
+/* tile menyala: hitam dengan warna indikator */
 .icon-item.tile.active,
 .icon-item.tile.high-beam,
-.icon-item.tile.warn,
 .icon-item.tile.locked {
-    background: var(--c);
-    border-color: #0b0b0d;
-    color: #0b0b0d;
+    background: #000;
+    border-color: var(--c);
+    color: var(--c);
 }
+.icon-item.tile.active .st::after,
+.icon-item.tile.high-beam .st::after,
+.icon-item.tile.locked .st::after { content: attr(data-on); }
 
-.stat-icon { color: rgba(244, 196, 0, 0.25); display: flex; transition: color 0.2s ease; }
+/* seatbelt tidak terpasang */
+.icon-item.tile.warn {
+    background: var(--red);
+    color: #fff;
+    animation: blink 0.7s steps(2) infinite;
+}
+.icon-item.tile.warn .st::after { content: attr(data-warn); }
+
+/* ikon gembok */
+.ic-unlocked { display: block; }
+.ic-locked   { display: none; }
+#door-lock.locked .ic-locked   { display: block; }
+#door-lock.locked .ic-unlocked { display: none; }
+
+/* ===== GAUGE ===== */
+.gauge {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    flex: none;
+}
+.gauge svg { width: 100%; height: 100%; display: block; }
+
+.needle {
+    transform-origin: 150px 150px;
+    transition: transform 0.14s linear;
+}
+.hud.sweeping .needle { transition-duration: 0.75s; transition-timing-function: ease-in-out; }
+
+.gauge .tick-label {
+    font-family: var(--font);
+    font-weight: 800;
+    font-size: 27px;
+    fill: var(--ink);
+}
+.gauge .tick-label.on-red { fill: #fff; }
+
+#rpm-gauge.redline .redzone { animation: blink 0.18s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.35; } }
+
+/* isi disc tengah */
+.center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 196px;
+    height: 196px;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0 10px;
+}
+.brand {
+    padding: 2px 12px;
+    background: #000;
+    border: 1px solid #44444c;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 0.22em;
+    color: #fff;
+}
+.icons { display: flex; gap: 22px; align-items: center; }
+.stat-icon { color: rgba(255, 255, 255, 0.2); display: flex; transition: color 0.2s ease; }
 #engine-icon.active-warn   { color: #ff9100; }
 #engine-icon.active-danger { color: #ff3333; }
+
+.digital {
+    width: 170px;
+    background: #000;
+    border: 1.5px solid #b9b9c1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.dg-top { display: flex; border-bottom: 1px solid #55555d; }
+.cell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3px 2px 2px;
+}
+.gear-cell { flex: 0 0 44px; border-right: 1px solid #55555d; }
+.gear-main { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
+.speed-text {
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+}
+.speed-text .dim { color: rgba(255, 255, 255, 0.2); }
+.speed-text .bright { color: #fff; }
+.cap { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; color: #9a9aa2; margin-top: 2px; }
+.dg-bottom { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 2px 0 3px; }
+.rpm-num { font-family: Consolas, 'Courier New', monospace; font-size: 20px; font-weight: 800; color: #fff; }
+.dg-bottom .cap { margin: 0; }
+
+/* sein */
+.arrow { --c: rgba(255, 255, 255, 0.2); }
 
 /* ===== INTRO SILUET ===== */
 .intro {
@@ -258,7 +289,6 @@ html, body {
 }
 .stage .car { width: 100%; display: block; }
 
-/* sorot lampu depan (mobil menghadap kiri) */
 .beam {
     position: absolute;
     right: 99%;

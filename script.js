@@ -1,7 +1,8 @@
 const MPS_TO_MPH = 2.236936;
-const MAX_MPH = 180;    // skala busur kecepatan
-const MAX_RPM = 8;      // skala tachometer (x1000)
-const RED_RPM = 7;      // mulai red zone
+const MPS_TO_KMH = 3.6;
+const MAX_RPM = 9;       // skala tachometer (x1000)
+const RED_RPM = 6;       // mulai red zone
+const BLINK_RPM = 8;     // red zone berkedip di atas ini
 
 const $ = (id) => document.getElementById(id);
 const elHud = $('hud');
@@ -20,8 +21,8 @@ function isTrueValue(val) {
 }
 
 // ---------- Gauge builder (SVG) ----------
-const C = 150, START = 135, SWEEP = 270;
-const ang = (v, max) => START + (v / max) * SWEEP;
+const C = 150, START = 90, SWEEP = 315;   // 0 di bawah, 3 di kiri, 6 di atas, 9 di kanan-bawah
+const ang = (v) => START + (v / MAX_RPM) * SWEEP;
 const pol = (r, a) => {
     const t = (a * Math.PI) / 180;
     return [(C + r * Math.cos(t)).toFixed(2), (C + r * Math.sin(t)).toFixed(2)];
@@ -40,81 +41,55 @@ function buildGauge(svg) {
           <stop offset="0" stop-color="#ffd21a"/><stop offset="1" stop-color="#e2b000"/>
         </radialGradient>
       </defs>
-      <circle cx="${C}" cy="${C}" r="149" fill="#2a2a30"/>
-      <circle cx="${C}" cy="${C}" r="146" fill="#0b0b0d"/>
-      <circle cx="${C}" cy="${C}" r="142" fill="url(#face-grad)"/>
-      <path class="redzone" d="${band(100, 142, ang(RED_RPM, MAX_RPM), ang(MAX_RPM, MAX_RPM))}" fill="#e5242b"/>`;
+      <circle cx="${C}" cy="${C}" r="149" fill="#26262b"/>
+      <circle cx="${C}" cy="${C}" r="146" fill="#000"/>
+      <circle cx="${C}" cy="${C}" r="141" fill="url(#face-grad)"/>
+      <path class="redzone" d="${band(86, 141, ang(RED_RPM), ang(MAX_RPM))}" fill="#e5242b"/>`;
 
     for (let v = 0; v <= MAX_RPM + 1e-6; v += 0.5) {
         const isMajor = Math.abs(v - Math.round(v)) < 1e-6;
-        const a = ang(v, MAX_RPM);
-        const [x1, y1] = pol(142, a), [x2, y2] = pol(isMajor ? 126 : 134, a);
-        s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#0b0b0d" stroke-width="${isMajor ? 3 : 1.5}"/>`;
+        const a = ang(v);
+        const [x1, y1] = pol(141, a), [x2, y2] = pol(isMajor ? 124 : 133, a);
+        s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#0b0b0d" stroke-width="${isMajor ? 3 : 1.6}"/>`;
         if (isMajor) {
-            const [tx, ty] = pol(113, a);
+            const [tx, ty] = pol(107, a);
             const onRed = v >= RED_RPM;
             s += `<text class="tick-label${onRed ? ' on-red' : ''}" x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="central">${v}</text>`;
         }
     }
 
-    // jarum (di bawah disc tengah)
+    // disc hitam tengah
+    s += `
+      <circle cx="${C}" cy="${C}" r="86" fill="#0b0b0d"/>
+      <circle cx="${C}" cy="${C}" r="86" fill="none" stroke="#3a3a42" stroke-width="2"/>`;
+
+    // jarum (di atas disc, di bawah panel digital HTML)
     s += `
       <g class="needle" style="transform:rotate(${START + 90}deg)">
-        <line x1="${C}" y1="${C + 10}" x2="${C}" y2="14" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
-        <line x1="${C}" y1="${C + 10}" x2="${C}" y2="14" stroke="#e5242b" stroke-width="3.5" stroke-linecap="round"/>
-      </g>`;
-
-    // disc hitam tengah + busur kecepatan
-    const [ax, ay] = pol(90, START), [bx, by] = pol(90, START + SWEEP);
-    const arc = `M${ax} ${ay}A90 90 0 1 1 ${bx} ${by}`;
-    s += `
-      <circle cx="${C}" cy="${C}" r="98" fill="#0b0b0d"/>
-      <circle cx="${C}" cy="${C}" r="98" fill="none" stroke="#2b2b31" stroke-width="2"/>
-      <path d="${arc}" fill="none" stroke="#26262c" stroke-width="5" stroke-linecap="round"/>
-      <path class="speed-arc" d="${arc}" pathLength="100" fill="none" stroke="#f4c400" stroke-width="5"
-            stroke-linecap="butt" stroke-dasharray="0 100"/>`;
+        <line x1="${C}" y1="${C + 18}" x2="${C}" y2="20" stroke="#000" stroke-width="7" stroke-linecap="round"/>
+        <line x1="${C}" y1="${C + 18}" x2="${C}" y2="21" stroke="#e5242b" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <circle cx="${C}" cy="${C}" r="10" fill="#17171b" stroke="#e5242b" stroke-width="3"/>`;
 
     svg.innerHTML = s;
-    return { needle: svg.querySelector('.needle'), speedArc: svg.querySelector('.speed-arc') };
+    return svg.querySelector('.needle');
 }
 
-const { needle: rpmNeedle, speedArc } = buildGauge($('rpm-svg'));
+const rpmNeedle = buildGauge($('rpm-svg'));
 
 function moveNeedle(needle, ratio) {
     const r = Math.max(0, Math.min(1, ratio));
     needle.style.transform = `rotate(${START + r * SWEEP + 90}deg)`;
 }
-function moveSpeedArc(ratio) {
-    const r = Math.max(0, Math.min(1, ratio));
-    speedArc.setAttribute('stroke-dasharray', `${(r * 100).toFixed(2)} 100`);
-}
-
-// Segmen bar (oil press & fuel)
-function buildSegs(id, n) {
-    const el = $(id);
-    el.innerHTML = '<i class="seg"></i>'.repeat(n);
-    return el.querySelectorAll('.seg');
-}
-const hSegs = buildSegs('health-segments', 10);
-const fSegs = buildSegs('fuel-segments', 10);
-function fillSegs(segs, percent) {
-    const active = Math.round(percent * segs.length);
-    segs.forEach((seg, i) => seg.classList.toggle('active', i < active));
-}
 
 // ---------- State (disimpan supaya intro tidak menimpa data game) ----------
 let introActive = true;
-const state = { mph: 0, rpm: 0 };
-
-function renderNeedles() {
-    moveSpeedArc(state.mph / MAX_MPH);
-    moveNeedle(rpmNeedle, state.rpm);
-}
+const state = { rpm: 0 };
 
 // ---------- 1. Kecepatan ----------
 window.setSpeed = function (speed) {
-    const mph = Math.round(Number(speed || 0) * MPS_TO_MPH);
-    state.mph = mph;
+    const mps = Number(speed || 0);
+    const mph = Math.round(mps * MPS_TO_MPH);
     const padded = String(mph).padStart(3, '0');
 
     if (mph < 10) {
@@ -124,7 +99,7 @@ window.setSpeed = function (speed) {
     } else {
         elSpeed.innerHTML = `<span class="bright">${padded}</span>`;
     }
-    if (!introActive) moveSpeedArc(mph / MAX_MPH);
+    $('kmh-val').textContent = Math.round(mps * MPS_TO_KMH);
 };
 
 // ---------- 2. RPM (0.0 - 1.0) ----------
@@ -132,7 +107,7 @@ window.setRPM = function (rpm) {
     const val = Math.max(0, Math.min(1, Number(rpm || 0)));
     state.rpm = val;
     elRpmVal.textContent = Math.round(val * MAX_RPM * 1000);
-    elRpmGauge.classList.toggle('redline', val >= RED_RPM / MAX_RPM);
+    elRpmGauge.classList.toggle('redline', val >= BLINK_RPM / MAX_RPM);
     if (!introActive) moveNeedle(rpmNeedle, val);
 };
 
@@ -141,7 +116,11 @@ window.setFuel = function (fuel) {
     const val = Number(fuel || 0);
     const percent = Math.max(0, Math.min(1, val > 1 ? val / 100 : val));
     $('fuel-val').textContent = Math.round(percent * 100);
-    fillSegs(fSegs, percent);
+    const tile = $('tile-fuel');
+    if (tile) {
+        tile.classList.toggle('danger', percent <= 0.15);
+        tile.classList.toggle('warn', percent > 0.15 && percent <= 0.30);
+    }
 };
 
 // ---------- 4. Engine Health (label tampil: OIL PRESS) ----------
@@ -149,7 +128,12 @@ window.setHealth = function (health) {
     let val = Number(health || 0);
     let percent = Math.max(0, Math.min(1, val > 1 ? val / 1000 : val));
     $('health-val').textContent = Math.round(percent * 100);
-    fillSegs(hSegs, percent);
+
+    const tile = $('tile-oil');
+    if (tile) {
+        tile.classList.toggle('danger', percent <= 0.25);
+        tile.classList.toggle('warn', percent > 0.25 && percent <= 0.50);
+    }
 
     const engineIcon = $('engine-icon');
     if (engineIcon) {
@@ -164,17 +148,26 @@ window.setGear = function (gear) {
     elGear.innerText = (gear == 0 || gear === "0") ? 'R' : String(gear);
 };
 
-// ---------- 6. Lock / Unlock ----------
+// ---------- 6. Lock / Unlock Vehicle (Mendukung semua alternatif panggilan JGRP) ----------
+let lockedNow = false;
 window.updateLockStatus = function (state) {
     const el = $('door-lock');
-    if (el) el.className = isLockedState(state) ? 'icon-item tile locked' : 'icon-item tile';
+    if (!el) return;
+
+    // dipanggil tanpa argumen (mis. toggleLock()) -> balik status
+    const locked = (state === undefined) ? !lockedNow : isLockedState(state);
+    lockedNow = locked;
+
+    if (locked) {
+        el.className = 'icon-item tile locked';   // Nyala kuning (Terkunci)
+    } else {
+        el.className = 'icon-item tile';          // Mati (Terbuka)
+    }
 };
-window.setDoors = window.updateLockStatus;
-window.setDoorLock = window.updateLockStatus;
-window.setVehicleLocked = window.updateLockStatus;
-window.setLocked = window.updateLockStatus;
-window.setLock = window.updateLockStatus;
-window.toggleLock = window.updateLockStatus;
+[
+    'setDoors', 'setDoorLock', 'setDoorsLocked', 'setVehicleLocked', 'setVehicleLock',
+    'setLocked', 'setLock', 'toggleLock', 'updateLock', 'lockVehicle', 'setCarLock'
+].forEach((name) => { window[name] = window.updateLockStatus; });
 
 // ---------- 7. Lampu ----------
 window.setHeadlights = function (state) {
@@ -203,7 +196,10 @@ window.setSeatbelts = function (state) {
 
 // ---------- 10. Odometer ----------
 window.setOdometer = function (distance) {
-    if (elOdo) elOdo.innerText = `${Number(distance || 0).toFixed(1)} mi`;
+    if (!elOdo) return;
+    const text = Number(distance || 0).toFixed(1);
+    elOdo.textContent = text;
+    elOdo.classList.toggle('sm', text.length > 6);   // kecilkan font kalau angkanya panjang
 };
 
 // ---------- Intro: siluet mobil + tes jarum ----------
@@ -222,16 +218,15 @@ window.playIntro = function () {
     const anim = $('scan-anim');
     if (anim && anim.beginElement) anim.beginElement();
 
-    moveSpeedArc(0);
     moveNeedle(rpmNeedle, 0);
 
-    setTimeout(() => { moveSpeedArc(1); moveNeedle(rpmNeedle, 1); }, 2800); // jarum naik
-    setTimeout(() => { moveSpeedArc(0); moveNeedle(rpmNeedle, 0); }, 3700); // jarum turun
+    setTimeout(() => moveNeedle(rpmNeedle, 1), 2800);   // jarum naik
+    setTimeout(() => moveNeedle(rpmNeedle, 0), 3700);   // jarum turun
     setTimeout(() => {
         intro.classList.add('done');
         elHud.classList.remove('sweeping');
         introActive = false;
-        renderNeedles();                                                    // pakai data game terbaru
+        moveNeedle(rpmNeedle, state.rpm);               // pakai data game terbaru
     }, 4600);
 };
 
@@ -239,10 +234,15 @@ window.playIntro = function () {
 window.addEventListener('message', function (event) {
     if (!event.data) return;
     const data = event.data;
-    if (data.type === 'setDoors' || data.action === 'setDoors' || data.type === 'lock') {
-        window.updateLockStatus(data.status !== undefined ? data.status : data.state);
+    const t = data.type || data.action;
+    if (['setDoors', 'lock', 'setLock', 'setLocked', 'updateLockStatus', 'setDoorLock'].includes(t)) {
+        const v = data.status !== undefined ? data.status
+                : data.state !== undefined ? data.state
+                : data.locked !== undefined ? data.locked
+                : data.value;
+        window.updateLockStatus(v);
     }
-    if (data.type === 'playIntro' || data.action === 'playIntro') window.playIntro();
+    if (t === 'playIntro') window.playIntro();
 });
 
 // Nilai awal & jalankan intro saat HUD pertama dimuat

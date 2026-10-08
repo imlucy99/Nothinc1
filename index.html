@@ -45,85 +45,110 @@
         </div>
       </div>
 
-      <!-- BARIS ATAS: sein + check engine -->
-      <div class="top-bar">
-        <div id="indicator-left" class="icon-item arrow">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      <!-- KOLOM KIRI (tile kuning) -->
+      <div class="side">
+        <div class="ytile" id="tile-oil">
+          <div class="row"><span class="v" id="health-val">--</span><span class="u">%</span></div>
+          <span class="sub">OIL PRESS</span>
         </div>
-        <div id="engine-icon" class="stat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M22 12c0-.6-.4-1-1-1h-2V9c0-.6-.4-1-1-1h-2V5c0-.6-.4-1-1-1H9c-.6 0-1 .4-1 1v3H6c-.6 0-1 .4-1 1v2H3c-.6 0-1 .4-1 1v3c0 .6.4 1 1 1h2v2c0 .6.4 1 1 1h12c.6 0 1-.4 1-1v-2h2c.6 0 1-.4 1-1v-3zM10 6h4v2h-4V6z"/>
-          </svg>
+        <div class="ytile" id="tile-fuel">
+          <div class="row"><span class="v" id="fuel-val">--</span><span class="u">%</span></div>
+          <span class="sub">FUEL</span>
         </div>
-        <div id="indicator-right" class="icon-item arrow">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+        <div class="ytile">
+          <div class="row"><span class="v" id="odometer">0.0</span><span class="u">MI</span></div>
+          <span class="sub">ODOMETER</span>
+        </div>
+        <div class="ytile">
+          <div class="row"><span class="v" id="kmh-val">0</span><span class="u">KM/H</span></div>
+          <span class="sub">SPEED</span>
         </div>
       </div>
 
-      <div class="main">
+      <!-- GAUGE TENGAH -->
+      <div class="gauge" id="rpm-gauge">
+        <svg id="rpm-svg" viewBox="0 0 300 300"></svg>
 
-        <!-- KOLOM KIRI (tile kuning) -->
-        <div class="side">
-          <div class="ytile">
-            <span class="lbl">OIL PRESS</span>
-            <span class="val"><span id="health-val">--</span><small>%</small></span>
-            <div id="health-segments" class="segs"></div>
-          </div>
-          <div class="ytile">
-            <span class="lbl">FUEL</span>
-            <span class="val"><span id="fuel-val">--</span><small>%</small></span>
-            <div id="fuel-segments" class="segs"></div>
-          </div>
-          <div class="ytile">
-            <span class="lbl">ODO</span>
-            <span id="odometer" class="val">0.0 mi</span>
-          </div>
-          <div class="ytile">
-            <span class="lbl">RPM</span>
-            <span id="rpm-val" class="val">0</span>
-          </div>
-        </div>
+        <div class="center">
+          <span class="brand">JGVRP</span>
 
-        <!-- GAUGE TENGAH -->
-        <div class="gauge" id="rpm-gauge">
-          <svg id="rpm-svg" viewBox="0 0 300 300"></svg>
-          <div class="center">
-            <span class="brand">JGVRP</span>
-            <div id="speed-display" class="speed-text">
-              <span class="dim">00</span><span class="bright">0</span>
+          <div class="icons">
+            <div id="indicator-left" class="icon-item arrow">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             </div>
-            <span class="unit" id="speed-mode">MPH</span>
-            <div class="gear-row"><span class="lbl">GEAR</span><span id="gear" class="gear-main">1</span></div>
+            <div id="engine-icon" class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22 12c0-.6-.4-1-1-1h-2V9c0-.6-.4-1-1-1h-2V5c0-.6-.4-1-1-1H9c-.6 0-1 .4-1 1v3H6c-.6 0-1 .4-1 1v2H3c-.6 0-1 .4-1 1v3c0 .6.4 1 1 1h2v2c0 .6.4 1 1 1h12c.6 0 1-.4 1-1v-2h2c.6 0 1-.4 1-1v-3zM10 6h4v2h-4V6z"/>
+              </svg>
+            </div>
+            <div id="indicator-right" class="icon-item arrow">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+            </div>
+          </div>
+
+          <div class="digital">
+            <div class="dg-top">
+              <div class="cell gear-cell">
+                <span id="gear" class="gear-main">1</span>
+                <span class="cap">GEAR</span>
+              </div>
+              <div class="cell">
+                <div id="speed-display" class="speed-text"><span class="dim">00</span><span class="bright">0</span></div>
+                <span class="cap">SPEED <span id="speed-mode">MPH</span></span>
+              </div>
+            </div>
+            <div class="dg-bottom">
+              <span id="rpm-val" class="rpm-num">0</span><span class="cap">RPM</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        <!-- KOLOM KANAN (indikator) -->
-        <div class="side">
-          <div id="headlight-low" class="icon-item tile">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- KOLOM KANAN (indikator) -->
+      <div class="side">
+        <div id="headlight-low" class="icon-item tile" data-off="OFF" data-on="ON">
+          <div class="row">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6V6z"/>
               <line x1="3" y1="9" x2="7" y2="10"/><line x1="3" y1="12" x2="7" y2="12"/><line x1="3" y1="15" x2="7" y2="14"/>
-            </svg><span>LOW</span>
+            </svg>
+            <span class="st"></span>
           </div>
-          <div id="headlight-high" class="icon-item tile">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <span class="sub">LOW BEAM</span>
+        </div>
+        <div id="headlight-high" class="icon-item tile" data-off="OFF" data-on="ON">
+          <div class="row">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6V6z"/>
               <line x1="2" y1="8" x2="7" y2="8"/><line x1="2" y1="12" x2="7" y2="12"/><line x1="2" y1="16" x2="7" y2="16"/>
-            </svg><span>HIGH</span>
+            </svg>
+            <span class="st"></span>
           </div>
-          <div id="seatbelts" class="icon-item tile">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 2v2h10V2H7zm10 18v2H7v-2h10zM10 6h4v3h-4V6zm0 9h4v3h-4v-3zm1-4.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z"/>
-            </svg><span>BELT</span>
-          </div>
-          <div id="door-lock" class="icon-item tile">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-            </svg><span>LOCK</span>
-          </div>
+          <span class="sub">HIGH BEAM</span>
         </div>
-
+        <div id="seatbelts" class="icon-item tile" data-off="OFF" data-on="OK" data-warn="WARN">
+          <div class="row">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 2v2h10V2H7zm10 18v2H7v-2h10zM10 6h4v3h-4V6zm0 9h4v3h-4v-3zm1-4.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z"/>
+            </svg>
+            <span class="st"></span>
+          </div>
+          <span class="sub">SEAT BELT</span>
+        </div>
+        <div id="door-lock" class="icon-item tile" data-off="OPEN" data-on="LOCKED">
+          <div class="row">
+            <svg class="ic-locked" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+            </svg>
+            <svg class="ic-unlocked" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z"/>
+            </svg>
+            <span class="st"></span>
+          </div>
+          <span class="sub">DOOR LOCK</span>
+        </div>
       </div>
+
     </div>
 
     <!-- Tombol dekoratif kanan -->
