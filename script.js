@@ -346,6 +346,17 @@ window.setOdometer = function (distance) {
     $('odometer').textContent = Number(distance || 0).toFixed(1);
 };
 
+// ---------- Intro ANNIS (bisa dipanggil ulang: playIntro()) ----------
+let introTimer;
+window.playIntro = function () {
+    elHud.classList.remove('intro-on');
+    void elHud.offsetWidth;                 // restart animasi CSS
+    elHud.classList.add('intro-on');
+    bootUntil = performance.now() + 1700;   // jarum RPM ikut menyapu
+    clearTimeout(introTimer);
+    introTimer = setTimeout(() => elHud.classList.remove('intro-on'), 2750);
+};
+
 // ---------- Message handler ----------
 window.addEventListener('message', function (event) {
     const data = event.data;
@@ -353,7 +364,7 @@ window.addEventListener('message', function (event) {
     if (data.type === 'setDoors' || data.action === 'setDoors' || data.type === 'lock') {
         window.updateLockStatus(data.status !== undefined ? data.status : data.state);
     }
-    if (data.type === 'playIntro' || data.action === 'playIntro') bootUntil = performance.now() + 1700;
+    if (data.type === 'playIntro' || data.action === 'playIntro') window.playIntro();
 });
 
 // ---------- Nilai awal ----------
@@ -366,6 +377,7 @@ window.setHeadlights(0);
 window.setSeatbelts(false);
 window.updateLockStatus(false);
 window.setOdometer(0);
+window.playIntro();   // animasi ANNIS saat HUD pertama kali dipakai
 
 // ---------- Demo (otomatis di preview Netlify atau dengan ?demo) ----------
 const params = new URLSearchParams(location.search);
@@ -407,5 +419,5 @@ if (isPreview) {
             setHeadlights(Math.floor(t / 9) % 3 === 2 ? 2 : 1);
             updateLockStatus(Math.floor(t / 7) % 2);
         }, 50);
-    }, 1900);
+    }, 3000);
 }
