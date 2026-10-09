@@ -1,306 +1,226 @@
 :root {
-    --face: #f4c400;
-    --ink: #0b0b0d;
-    --panel: #17171b;
-    --line: #2b2b31;
-    --red: #e5242b;
-    --dim: rgba(255, 255, 255, 0.22);
-    --font: 'Bahnschrift', 'DIN Alternate', 'Arial Narrow', 'Segoe UI', sans-serif;
+    --scale: 0.8;               /* ubah untuk memperbesar / memperkecil HUD */
+    --red: #ff2a2f;
+    --red-deep: #c4161c;
+    --green: #22d65a;
+    --blue: #2f8bff;
+    --yellow: #ffc21a;
+    --text: #f2f3f5;
+    --muted: #8a8f99;
+    --off: rgba(255, 255, 255, 0.13);
+    --panel: rgba(255, 255, 255, 0.035);
+    --line: rgba(255, 255, 255, 0.09);
+    --digital: 'Orbitron', 'Bahnschrift', 'Eurostile', 'Arial Narrow', sans-serif;
+    --ui: 'Rajdhani', 'Bahnschrift', 'Segoe UI', sans-serif;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    box-shadow: none !important;
-    text-shadow: none !important;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
     width: 100vw;
     height: 100vh;
-    background: transparent !important;
-    overflow: hidden !important;
-    font-family: var(--font);
-    color: #fff;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
+    background: transparent;
+    overflow: hidden;
+    font-family: var(--ui);
+    color: var(--text);
+    user-select: none;
 }
 
-/* ===== HUD / BEZEL ===== */
-.hud {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 860px;
-    padding: 16px 14px;
-    margin: 20px;
-    background: #1b1b1f !important;
-    border: 2px solid #34343b;
-    border-radius: 26px;
-    transform: scale(0.78);          /* ubah untuk memperbesar / memperkecil HUD */
+/* Posisi HUD: kanan bawah layar */
+.hud-wrap {
+    position: fixed;
+    right: 18px;
+    bottom: 12px;
+    width: 500px;
+    height: 340px;
+    transform: scale(var(--scale));
     transform-origin: bottom right;
 }
 
-.btns {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-self: stretch;
-    gap: 14px;
-    width: 38px;
+/* Mode preview di browser (demo) */
+body.preview {
+    background:
+        radial-gradient(ellipse at 50% 120%, #2a2f38 0%, transparent 60%),
+        linear-gradient(180deg, #4b5563 0%, #1f242c 55%, #0d0f13 100%);
 }
-.btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 34px;
-    border-radius: 8px;
-    background: #0e0e11;
-    border: 1px solid #3a3a42;
-    color: #cfcfd6;
-    font-size: 15px;
-    font-weight: 800;
+body.preview .hud-wrap {
+    right: 50%;
+    bottom: 50%;
+    transform: translate(50%, 50%) scale(min(1, calc(100vw / 540px)));
+    transform-origin: center;
 }
 
-/* layar */
-.screen {
+/* ===================== CLUSTER ===================== */
+.cluster {
     position: relative;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    height: 396px;
-    padding: 8px;
-    background: #000;
-    border: 3px solid #0c0c0f;
-    border-radius: 14px;
-    overflow: hidden;
+    width: 500px;
+    height: 340px;
 }
 
-/* ===== KOLOM SAMPING ===== */
-.side {
-    width: 150px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    z-index: 1;
-}
+.dial { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 
-/* tile kuning */
-.ytile {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: var(--face);
-    border: 2px solid #000;
-    border-radius: 6px;
-    padding: 2px 10px 4px;
-    color: var(--ink);
-    transition: background 0.2s ease, color 0.2s ease;
-}
-.row { display: flex; align-items: center; gap: 6px; }
-.ytile .row { align-items: flex-start; gap: 4px; }
-.ytile .v {
-    font-size: 46px;
+.dial .tk { stroke: rgba(255, 255, 255, 0.2); transition: stroke 0.08s linear; }
+.dial .tk.on { stroke: #ffffff; }
+.dial .tk.rl { stroke: rgba(255, 42, 47, 0.45); }
+.dial .tk.rl.on { stroke: var(--red); }
+
+.dial .num {
+    font-family: var(--digital);
     font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
+    font-size: 24px;
+    fill: #e9eaee;
+    font-style: italic;
 }
-.ytile .v.sm { font-size: 32px; padding-top: 8px; }
-.ytile .u { font-size: 14px; font-weight: 800; margin-top: 5px; }
-.sub {
-    font-size: 9.5px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: 0.7;
-    margin-top: 1px;
-}
-.ytile.warn   { background: #ff9100; }
-.ytile.danger { background: var(--red); color: #fff; }
+.dial .num.on { fill: #ffffff; }
+.dial .num.rl { fill: #ff6b6f; }
 
-/* ===== INDIKATOR (tile kanan) ===== */
+.dial .arc-lbl { font-family: var(--ui); font-weight: 700; font-size: 15px; fill: var(--muted); }
+.dial .arc-lbl.warn { fill: var(--red); }
+.dial .scale-lbl { font-family: var(--ui); font-weight: 600; font-size: 11px; letter-spacing: 2px; fill: #5b606a; }
+
+.dial .seg { fill: rgba(255, 255, 255, 0.1); transition: fill 0.2s ease; }
+.dial .seg.on { fill: #e8e9ec; }
+.dial .seg.on.low { fill: var(--red); }
+.cluster.oil-warn .dial .oil-seg.on { fill: var(--yellow); }
+.cluster.oil-crit .dial .oil-seg.on { fill: var(--red); }
+
+/* Jarum: ditransform langsung lewat atribut oleh JS (tanpa transition, sudah di-smooth per frame) */
+.cluster.redline .dial #redline-arc,
+.cluster.redline .dial .tk.rl.on { animation: blink 0.16s steps(2) infinite; }
+
+@keyframes blink { 50% { opacity: 0.25; } }
+
+/* ===================== IKON INDIKATOR ===================== */
 .icon-item {
-    --c: var(--dim);
-    color: var(--c);
-    transition: color 0.15s ease, background 0.15s ease;
+    width: 24px;
+    height: 24px;
+    color: var(--off);
+    transition: color 0.15s ease, filter 0.15s ease;
 }
-.icon-item.active     { --c: #00ff66; }
-.icon-item.high-beam  { --c: #3aa0ff; }
-.icon-item.warn       { --c: #ff3c3c; }
-.icon-item.locked     { --c: #ffea00; }
+.icon-item svg { width: 100%; height: 100%; display: block; }
 
-.icon-item.tile {
-    flex: 1;
+.icon-item.active    { color: var(--green); filter: drop-shadow(0 0 5px rgba(34, 214, 90, 0.6)); }
+.icon-item.high-beam { color: var(--blue);  filter: drop-shadow(0 0 6px rgba(47, 139, 255, 0.75)); }
+.icon-item.warn      { color: var(--red);   filter: drop-shadow(0 0 5px rgba(255, 42, 47, 0.6)); }
+.icon-item.locked    { color: var(--yellow); filter: drop-shadow(0 0 5px rgba(255, 194, 26, 0.6)); }
+
+/* Satu ikon lampu: garis miring (low) atau lurus (high) */
+#headlight .beam-high { display: none; }
+#headlight.high-beam .beam-high { display: inline; }
+#headlight.high-beam .beam-low { display: none; }
+
+/* Gembok: tertutup saat terkunci, terbuka saat tidak */
+#door-lock .shackle-closed { display: none; }
+#door-lock.locked .shackle-closed { display: inline; }
+#door-lock.locked .shackle-open { display: none; }
+
+/* ===================== GEAR & ODO (pojok atas) ===================== */
+.corner {
+    position: absolute;
+    top: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding: 2px 10px 4px;
-    background: var(--face);
-    border: 2px solid #000;
-    border-radius: 6px;
-    color: var(--ink);
+    line-height: 1;
 }
-.icon-item.tile .row { gap: 8px; }
-.icon-item.tile .st { font-size: 26px; font-weight: 800; line-height: 1; }
-.icon-item.tile .st::after { content: attr(data-off); }
-.icon-item.tile[data-off] .st::after { content: attr(data-off); }
-
-/* tile menyala: hitam dengan warna indikator */
-.icon-item.tile.active,
-.icon-item.tile.high-beam,
-.icon-item.tile.locked {
-    background: #000;
-    border-color: var(--c);
-    color: var(--c);
-}
-.icon-item.tile.active .st::after,
-.icon-item.tile.high-beam .st::after,
-.icon-item.tile.locked .st::after { content: attr(data-on); }
-
-/* seatbelt tidak terpasang */
-.icon-item.tile.warn {
-    background: var(--red);
+.gear-box { left: 24px; align-items: flex-start; width: 60px; }
+.odo-box  { right: 24px; align-items: flex-end; }
+.c-lbl { font-family: var(--ui); font-size: 12px; font-weight: 700; letter-spacing: 3px; color: var(--muted); }
+.gear-val {
+    margin-top: 5px;
+    font-family: var(--digital);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 34px;
     color: #fff;
-    animation: blink 0.7s steps(2) infinite;
+    transform: skewX(-6deg);
 }
-.icon-item.tile.warn .st::after { content: attr(data-warn); }
-
-/* ikon gembok */
-.ic-unlocked { display: block; }
-.ic-locked   { display: none; }
-#door-lock.locked .ic-locked   { display: block; }
-#door-lock.locked .ic-unlocked { display: none; }
-
-/* ===== GAUGE ===== */
-.gauge {
-    position: relative;
-    width: 380px;
-    height: 380px;
-    flex: none;
+.odo-val {
+    margin-top: 9px;
+    font-family: var(--digital);
+    font-weight: 600;
+    font-size: 15px;
+    color: #e3e5e9;
+    font-variant-numeric: tabular-nums;
 }
-.gauge svg { width: 100%; height: 100%; display: block; }
+.odo-val small { font-family: var(--ui); font-size: 12px; color: var(--muted); margin-left: 4px; }
 
-.needle {
-    transform-origin: 150px 150px;
-    transition: transform 0.14s linear;
-}
-.hud.sweeping .needle { transition-duration: 0.75s; transition-timing-function: ease-in-out; }
-
-.gauge .tick-label {
-    font-family: var(--font);
-    font-weight: 800;
-    font-size: 27px;
-    fill: var(--ink);
-}
-.gauge .tick-label.on-red { fill: #fff; }
-
-#rpm-gauge.redline .redzone { animation: blink 0.18s steps(2) infinite; }
-@keyframes blink { 50% { opacity: 0.35; } }
-
-/* isi disc tengah */
+/* ===================== READOUT TENGAH ===================== */
 .center {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 196px;
-    height: 196px;
+    left: 250px;
+    top: 203px;
+    width: 190px;
     transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 0 10px;
 }
-.brand {
-    padding: 2px 12px;
-    background: #000;
-    border: 1px solid #44444c;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 800;
-    font-style: italic;
-    letter-spacing: 0.22em;
-    color: #fff;
-}
-.icons { display: flex; gap: 22px; align-items: center; }
-.stat-icon { color: rgba(255, 255, 255, 0.2); display: flex; transition: color 0.2s ease; }
-#engine-icon.active-warn   { color: #ff9100; }
-#engine-icon.active-danger { color: #ff3333; }
 
-.digital {
-    width: 170px;
-    background: #000;
-    border: 1.5px solid #b9b9c1;
-    border-radius: 6px;
-    overflow: hidden;
-}
-.dg-top { display: flex; border-bottom: 1px solid #55555d; }
-.cell {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 3px 2px 2px;
-}
-.gear-cell { flex: 0 0 44px; border-right: 1px solid #55555d; }
-.gear-main { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
-.speed-text {
-    font-family: Consolas, 'Courier New', monospace;
-    font-size: 34px;
-    font-weight: 800;
+.unit {
+    font-family: var(--ui);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--muted);
     line-height: 1;
 }
-.speed-text .dim { color: rgba(255, 255, 255, 0.2); }
-.speed-text .bright { color: #fff; }
-.cap { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; color: #9a9aa2; margin-top: 2px; }
-.dg-bottom { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 2px 0 3px; }
-.rpm-num { font-family: Consolas, 'Courier New', monospace; font-size: 20px; font-weight: 800; color: #fff; }
-.dg-bottom .cap { margin: 0; }
+.unit.sub { font-size: 11px; letter-spacing: 3px; margin-top: 3px; }
 
-/* sein */
-.arrow { --c: rgba(255, 255, 255, 0.2); }
+.speed {
+    font-family: var(--digital);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 66px;
+    line-height: 1;
+    letter-spacing: 1px;
+    margin: 4px 0 6px;
+    transform: skewX(-6deg);
+    font-variant-numeric: tabular-nums;
+}
+.speed .bright { color: #fff; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.35); }
+.dim { color: rgba(255, 255, 255, 0.1); }
 
-/* ===== INTRO SILUET ===== */
-.intro {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
+.status-row {
     display: flex;
-    align-items: center;
     justify-content: center;
-    background: #08080a;
-    pointer-events: none;
-    animation: introOut 0.6s ease 2.7s forwards;
-}
-.intro.done { display: none; }
-
-.stage {
-    position: relative;
-    width: 380px;
-    animation: carIn 1.1s cubic-bezier(0.18, 0.7, 0.2, 1) 0.1s both;
-}
-.stage .car { width: 100%; display: block; }
-
-.beam {
-    position: absolute;
-    right: 99%;
-    top: 52px;
+    align-items: center;
+    gap: 18px;
     width: 130px;
-    height: 34px;
-    background: linear-gradient(to left, rgba(255, 224, 120, 0.7), rgba(255, 224, 120, 0));
-    clip-path: polygon(100% 38%, 0 0, 0 100%, 100% 62%);
-    opacity: 0;
-    animation: beamOn 1s ease 1.1s forwards;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-@keyframes carIn   { from { opacity: 0; transform: translateX(-110px); } to { opacity: 1; transform: none; } }
-@keyframes beamOn  { 0% { opacity: 0; } 35% { opacity: 1; } 55% { opacity: 0.4; } 100% { opacity: 1; } }
-@keyframes introOut { to { opacity: 0; } }
+.shift {
+    position: absolute;
+    top: -26px;
+    font-family: var(--digital);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--red);
+    opacity: 0;
+}
+.cluster.redline .shift { opacity: 1; animation: blink 0.16s steps(2) infinite; }
+
+/* ===================== NILAI ARC / FOOTER ===================== */
+.arc-val {
+    position: absolute;
+    top: 308px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-family: var(--digital);
+    font-weight: 800;
+    font-size: 19px;
+    color: #fff;
+}
+.arc-val svg { width: 17px; height: 17px; align-self: center; color: #c9ccd2; margin-right: 3px; }
+.arc-val small { font-family: var(--ui); font-size: 12px; color: var(--muted); }
+.arc-val.fuel { left: 20px; }
+.arc-val.oil  { right: 20px; }
+.cluster.fuel-low .arc-val.fuel span { color: var(--yellow); }
+.cluster.oil-warn .arc-val.oil span { color: var(--yellow); }
+.cluster.oil-crit .arc-val.oil span { color: var(--red); }
+
+/* Boot: semua ikon menyala sebentar seperti mobil asli saat kunci kontak ON */
+.cluster.booting .icon-item { color: rgba(255, 255, 255, 0.55); }
