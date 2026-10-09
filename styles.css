@@ -1,4 +1,5 @@
 :root {
+    --logo-size: 150px;         /* ukuran logo intro */
     --speed-size: 46px;         /* ukuran angka speed (aman di dalam lingkaran) */
     --scale: 0.8;               /* ubah untuk memperbesar / memperkecil HUD */
     --red: #ff2a2f;
@@ -230,11 +231,10 @@ body.preview .hud-wrap {
 /* ===================== INTRO ANNIS ===================== */
 .intro {
     position: absolute;
-    left: 250px;
-    top: 205px;
+    left: 162px;
+    top: 117px;
     width: 176px;
     height: 176px;
-    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -243,7 +243,7 @@ body.preview .hud-wrap {
     opacity: 0;
     pointer-events: none;
 }
-.intro-emblem, .intro-logo { width: 58px; height: 58px; display: block; object-fit: contain; }
+.intro-emblem { width: 58px; height: 58px; display: block; }
 .intro-text {
     display: flex;
     gap: 3px;
@@ -285,3 +285,26 @@ body.preview .hud-wrap {
 @keyframes letterIn  { to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes lineGrow  { to { width: 110px; } }
 @keyframes centerIn  { 0%, 82% { opacity: 0; } 100% { opacity: 1; } }
+
+/* ----- Logo kustom (logo.png) ----- */
+.intro-logo {
+    display: none;
+    width: var(--logo-size);
+    height: var(--logo-size);
+    object-fit: contain;
+    filter: invert(1) contrast(1.6);   /* logo hitam -> putih, sisa latar jadi hitam pekat */
+    mix-blend-mode: screen;       /* latar putih/hitam hilang di atas HUD gelap */
+    opacity: 0;
+}
+.intro.has-logo { opacity: 1; animation: none !important; }   /* fade diatur oleh logonya sendiri */
+.intro.has-logo .intro-logo { display: block; }
+.intro.has-logo .intro-emblem,
+.intro.has-logo .intro-text,
+.intro.has-logo .intro-line { display: none; }
+.cluster.intro-on .intro.has-logo .intro-logo { animation: logoIn 2.7s ease-out both; }
+@keyframes logoIn {
+    0%   { opacity: 0; transform: scale(0.82); filter: invert(1) contrast(1.6) blur(6px); }
+    30%  { opacity: 1; transform: scale(1);    filter: invert(1) contrast(1.6) blur(0); }
+    80%  { opacity: 1; transform: scale(1);    filter: invert(1) contrast(1.6) blur(0); }
+    100% { opacity: 0; transform: scale(1.04); filter: invert(1) contrast(1.6) blur(0); }
+}
