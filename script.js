@@ -194,6 +194,9 @@ const state = {
     psiShown: 0,
     lastTick: -1,
     trip: 0,
+    belted: false,
+    engine: false,   // dari setEngine(); alarm hanya bunyi saat mesin hidup
+    mps: 0,          // kecepatan mentah (m/s)
 };
 let bootUntil = performance.now() + 1700;
 
@@ -268,6 +271,7 @@ requestAnimationFrame(frame);
 window.setSpeed = function (speed) {
     const mph = Math.round(Number(speed || 0) * MPS_TO_MPH);
     state.mph = mph;
+    state.mps = Number(speed || 0);
     $('speed-display').innerHTML = padDigits(mph, 3);
 };
 
@@ -283,7 +287,7 @@ window.setFuel = function (fuel) {
     state.fuel = percent;
     $('fuel-val').textContent = Math.round(percent * 100);
     fillSegs(fuelSegs, percent);
-    const low = percent <= 0.15;
+    const low = percent < 0.20;
     fuelSegs.forEach((s) => s.classList.toggle('low', low));
     elHud.classList.toggle('fuel-low', low);
     $('fuel-e').classList.toggle('warn', low);
@@ -337,8 +341,10 @@ window.setLeftIndicator = function () {};    // sein dihapus dari tampilan
 window.setRightIndicator = function () {};
 
 // ---------- 9. Seatbelt (true = terpasang) ----------
-window.setSeatbelts = function (state) {
-    $('seatbelts').className = isTrueValue(state) ? 'icon-item active' : 'icon-item warn';
+window.setSeatbelts = function (val) {
+    const on = isTrueValue(val);
+    state.belted = on;
+    $('seatbelts').className = on ? 'icon-item active' : 'icon-item warn';
 };
 
 // ---------- 10. Odometer (mil) ----------
@@ -356,6 +362,121 @@ window.playIntro = function () {
     clearTimeout(introTimer);
     introTimer = setTimeout(() => elHud.classList.remove('intro-on'), 2750);
 };
+
+// ---------- Suara peringatan (dibuat lewat Web Audio, tanpa file mp3) ----------
+// Ubah nilai di SND untuk mengatur suara. Matikan semua: setHudSound(false)
+const SND = {
+    enabled: true,
+    volume: 0.3,            // 0 - 1
+    seatbeltEvery: 4000,    // ms jeda antar bunyi seatbelt
+    seatbeltMinSpeed: 1,    // m/s: seatbelt hanya bunyi saat mobil bergerak lebih cepat dari ini (0 = selalu, 1 m/s ~ 2 mph)
+    fuelBelow: 0.20,        // bensin di bawah 20%
+    fuelEvery: 30000,       // ms jeda antar chime bensin
+};
+// Suara hanya bunyi kalau mesin HIDUP (setEngine(true)).
+// Matikan via link: ?nosound / ?mute / ?silent / ?noalarm   Volume via link: ?volume=0.0-1.0
+try {
+    const q = new URLSearchParams(location.search);
+    ['nosound', 'mute', 'silent', 'noalarm', 'noseatbelt', 'nobelt'].forEach((k) => {
+        if (q.has(k) && !['0', 'false', 'no', 'off'].includes((q.get(k) || '').toLowerCase())) SND.enabled = false;
+    });
+    if (q.has('volume') && !isNaN(parseFloat(q.get('volume')))) SND.volume = Math.max(0, Math.min(1, parseFloat(q.get('volume'))));
+} catch (e) {}
+let audioCtx = null;
+function getAudio() {
+    if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        audioCtx = new AC();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    return audioCtx;
+}
+function tone(freq, start, dur, type, vol) {
+    const a = getAudio();
+    if (!a) return;
+    const t0 = a.currentTime + start;
+    const osc = a.createOscillator(), gain = a.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, SND.volume * vol), t0 + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain).connect(a.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.03);
+}
+window.playHudSound = function (kind) {
+    if (!SND.enabled) return;
+    if (kind === 'seatbelt') {                       // beep-beep
+        tone(1000, 0.00, 0.14, 'triangle', 1);
+        tone(1000, 0.22, 0.14, 'triangle', 1);
+    } else if (kind === 'fuel') {                    // ding-dong
+        tone(988, 0.00, 0.45, 'sine', 1);
+        tone(1976, 0.00, 0.30, 'sine', 0.25);
+        tone(740, 0.30, 0.70, 'sine', 1);
+        tone(1480, 0.30, 0.45, 'sine', 0.25);
+    }
+};
+window.setHudSound = function (on, volume) {
+    SND.enabled = !!on;
+    if (volume !== undefined) SND.volume = clamp01(Number(volume));
+};
+// Browser butuh interaksi pertama untuk membuka audio (di CEF/FiveM biasanya langsung jalan)
+['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, getAudio, { once: true }));
+
+let lastSeatBeep = -Infinity, lastFuelChime = -Infinity;
+setInterval(() => {
+    if (!SND.enabled || elHud.classList.contains('intro-on')) return;
+    const now = performance.now();
+
+    // Seatbelt: mesin hidup + belum dipasang + mobil bergerak
+    const seatWarn = state.engine && !state.belted && state.mps > SND.seatbeltMinSpeed;
+    if (!seatWarn) lastSeatBeep = -Infinity;          // kondisi hilang -> siap bunyi lagi saat muncul
+    else if (now - lastSeatBeep >= SND.seatbeltEvery) {
+        lastSeatBeep = now;
+        window.playHudSound('seatbelt');
+    }
+
+    // Bensin < 20% dan mesin hidup
+    const fuelWarn = state.engine && state.fuel < SND.fuelBelow;
+    if (!fuelWarn) lastFuelChime = -Infinity;
+    else if (now - lastFuelChime >= SND.fuelEvery) {
+        lastFuelChime = now;
+        window.playHudSound('fuel');
+    }
+}, 250);
+
+// ---------- Engine (JGVRP: setEngine(true/false)) ----------
+window.setEngine = function (on) {
+    state.engine = isTrueValue(on);
+};
+// Alias kontrol suara (nama sama dengan template JGVRP)
+window.setSeatbeltSoundEnabled = (on) => window.setHudSound(!!on);
+window.setSeatbeltVolume = (v) => { const n = parseFloat(v); if (!isNaN(n)) window.setHudSound(SND.enabled, n); };
+
+// Pesan gaya NUI: window.postMessage({ action: 'setEngine', state: true })
+window.addEventListener('message', function (event) {
+    const d = event.data;
+    if (!d || typeof d !== 'object' || !d.action) return;
+    try {
+        switch (d.action) {
+            case 'setEngine': window.setEngine(d.state); break;
+            case 'setSpeed': window.setSpeed(Number(d.speed) || 0); break;
+            case 'setRPM': window.setRPM(Number(d.rpm) || 0); break;
+            case 'setFuel': window.setFuel(Number(d.fuel) || 0); break;
+            case 'setHealth': window.setHealth(Number(d.health) || 0); break;
+            case 'setGear': window.setGear(d.gear !== undefined ? d.gear : 'N'); break;
+            case 'setHeadlights': window.setHeadlights(Number(d.state) || 0); break;
+            case 'setSeatbelts': window.setSeatbelts(!!d.state); break;
+            case 'setOdometer': window.setOdometer(Number(d.distance) || 0); break;
+            case 'muteSeatbelt': window.setSeatbeltSoundEnabled(false); break;
+            case 'unmuteSeatbelt': window.setSeatbeltSoundEnabled(true); break;
+            case 'setSeatbeltSound': window.setSeatbeltSoundEnabled(d.enabled !== undefined ? !!d.enabled : !d.disabled); break;
+            case 'setVolume': window.setSeatbeltVolume(d.volume !== undefined ? d.volume : d.value); break;
+        }
+    } catch (e) { /* abaikan pesan rusak */ }
+});
 
 // ---------- Message handler ----------
 window.addEventListener('message', function (event) {
@@ -375,6 +496,7 @@ window.setHealth(1000);
 window.setGear('N');
 window.setHeadlights(0);
 window.setSeatbelts(false);
+window.setEngine(false);
 window.updateLockStatus(false);
 window.setOdometer(0);
 window.playIntro();   // animasi ANNIS saat HUD pertama kali dipakai
@@ -389,7 +511,8 @@ if (isPreview) {
     let mps = 0, gear = 1, throttle = true, odo = 18452.3, health = 1000, fuel = 86, t = 0;
 
     setTimeout(() => {
-        setSeatbelts(true);
+        setEngine(true);
+        setTimeout(() => setSeatbelts(true), 9000);   // belum dipasang 9 detik pertama -> terdengar beep
         setHeadlights(1);
         setInterval(() => {
             t += 0.05;

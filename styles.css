@@ -228,7 +228,7 @@ body.preview .hud-wrap {
 /* Boot: semua ikon menyala sebentar seperti mobil asli saat kunci kontak ON */
 .cluster.booting .icon-item { color: rgba(255, 255, 255, 0.55); }
 
-/* ===================== INTRO ANNIS ===================== */
+/* ===================== INTRO ANNIS (slam) ===================== */
 .intro {
     position: absolute;
     left: 162px;
@@ -239,23 +239,22 @@ body.preview .hud-wrap {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 9px;
+    gap: 12px;
     opacity: 0;
     pointer-events: none;
 }
-.intro-emblem { width: 58px; height: 58px; display: block; }
 .intro-text {
     display: flex;
-    gap: 3px;
+    gap: 4px;
     font-family: var(--digital);
     font-weight: 900;
     font-style: italic;
-    font-size: 25px;
+    font-size: 28px;
     line-height: 1;
     color: #fff;
     transform: skewX(-6deg);
 }
-.intro-text span { opacity: 0; transform: translateY(10px) scale(0.8); display: inline-block; }
+.intro-text span { opacity: 0; display: inline-block; }
 .intro-line {
     display: block;
     height: 2px;
@@ -263,28 +262,25 @@ body.preview .hud-wrap {
     background: var(--red);
     box-shadow: 0 0 8px rgba(255, 42, 47, 0.8);
 }
-.intro-emblem .ring { stroke-dasharray: 176; stroke-dashoffset: 176; }
-.intro-emblem .arc, .intro-emblem .dot { opacity: 0; }
 
-.cluster.intro-on .intro        { animation: introFade 2.7s ease both; }
-.cluster.intro-on .intro .ring  { animation: ringDraw 0.9s 0.1s ease-out forwards; }
-.cluster.intro-on .intro .arc   { animation: popIn 0.4s 0.7s ease-out forwards; }
-.cluster.intro-on .intro .dot   { animation: popIn 0.4s 0.85s ease-out forwards; }
-.cluster.intro-on .intro-text span { animation: letterIn 0.35s ease-out forwards; }
-.cluster.intro-on .intro-text span:nth-child(1) { animation-delay: 0.60s; }
-.cluster.intro-on .intro-text span:nth-child(2) { animation-delay: 0.72s; }
-.cluster.intro-on .intro-text span:nth-child(3) { animation-delay: 0.84s; }
-.cluster.intro-on .intro-text span:nth-child(4) { animation-delay: 0.96s; }
-.cluster.intro-on .intro-text span:nth-child(5) { animation-delay: 1.08s; }
-.cluster.intro-on .intro-line   { animation: lineGrow 0.6s 1.15s ease-out forwards; }
-.cluster.intro-on .center       { animation: centerIn 2.7s ease both; }
+.cluster.intro-on .intro { animation: introFade 2.7s ease both; }
+.cluster.intro-on .intro-text span { animation: slamIn 0.45s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
+.cluster.intro-on .intro-text span:nth-child(1) { animation-delay: 0.30s; }
+.cluster.intro-on .intro-text span:nth-child(2) { animation-delay: 0.39s; }
+.cluster.intro-on .intro-text span:nth-child(3) { animation-delay: 0.48s; }
+.cluster.intro-on .intro-text span:nth-child(4) { animation-delay: 0.57s; }
+.cluster.intro-on .intro-text span:nth-child(5) { animation-delay: 0.66s; }
+.cluster.intro-on .intro-line { animation: lineGrow 0.6s 1.0s ease-out forwards; }
+.cluster.intro-on .center     { animation: centerIn 2.7s ease both; }
 
 @keyframes introFade { 0% { opacity: 0; } 8% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes ringDraw  { to { stroke-dashoffset: 0; } }
-@keyframes popIn     { to { opacity: 1; } }
-@keyframes letterIn  { to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes lineGrow  { to { width: 110px; } }
 @keyframes centerIn  { 0%, 82% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes slamIn {
+    0%   { opacity: 0; transform: translateX(-70px) skewX(-25deg); filter: blur(6px); }
+    70%  { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: none; filter: none; text-shadow: 0 0 14px rgba(255, 255, 255, 0.5); }
+}
 
 /* ----- Logo kustom (logo.png) ----- */
 .intro-logo {
@@ -308,3 +304,5 @@ body.preview .hud-wrap {
     80%  { opacity: 1; transform: scale(1);    filter: invert(1) contrast(1.6) blur(0); }
     100% { opacity: 0; transform: scale(1.04); filter: invert(1) contrast(1.6) blur(0); }
 }
+
+
