@@ -11,7 +11,6 @@
 const MPS_TO_MPH = 2.236936;
 const MAX_RPM = 8;          // skala tachometer (x1000)
 const REDLINE = 7;          // mulai zona merah (x1000)
-const MAX_PSI = 80;         // skala oil pressure
 
 const NOOP_EL = document.createElement('div');   // pengaman kalau ada elemen yang sudah dihapus dari HTML
 const $ = (id) => document.getElementById(id) || NOOP_EL;
@@ -191,7 +190,7 @@ const state = {
     rpmShown: 0,     // nilai yang di-smooth untuk animasi
     health: 1,       // 0-1
     fuel: 0,
-    psiShown: 0,
+    healthShown: 0,  // 0-1, di-smooth untuk arc OIL PRESS
     lastTick: -1,
     trip: 0,
     belted: false,
@@ -230,12 +229,6 @@ function fillSegs(segs, ratio) {
     segs.forEach((seg, i) => seg.classList.toggle('on', i < n));
 }
 
-// Engine health ditampilkan sebagai oil pressure (psi):
-// mesin sehat ~55 psi saat idle dan naik sedikit mengikuti RPM, turun seiring health.
-function oilPsi() {
-    return state.health * (55 + 15 * state.rpmShown);
-}
-
 // ---------- Loop animasi ----------
 let lastFrame = performance.now();
 function frame(now) {
@@ -257,11 +250,11 @@ function frame(now) {
     if (Math.abs(target - state.rpmShown) < 0.0005) state.rpmShown = target;
     renderRpm(state.rpmShown);
 
-    // oil pressure (smooth)
-    const psi = now < bootUntil ? target * MAX_PSI : oilPsi();
-    state.psiShown += (psi - state.psiShown) * Math.min(1, dt * 6);
-    fillSegs(oilSegs, state.psiShown / MAX_PSI);
-    $('oil-val').textContent = Math.round(state.psiShown);
+    // OIL PRESS = nilai setHealth (0-100%), di-smooth
+    const hp = now < bootUntil ? target : state.health;
+    state.healthShown += (hp - state.healthShown) * Math.min(1, dt * 6);
+    fillSegs(oilSegs, state.healthShown);
+    $('oil-val').textContent = Math.round(state.healthShown * 100);
 
     requestAnimationFrame(frame);
 }
@@ -293,7 +286,7 @@ window.setFuel = function (fuel) {
     $('fuel-e').classList.toggle('warn', low);
 };
 
-// ---------- 4. Engine Health -> Oil Pressure & Check Engine ----------
+// ---------- 4. Engine Health -> arc OIL PRESS (nilai & arc langsung dari setHealth) ----------
 window.setHealth = function (health) {
     const val = Number(health || 0);
     const percent = clamp01(val > 1 ? val / 1000 : val);
@@ -368,7 +361,7 @@ window.playIntro = function () {
 const SND = {
     enabled: true,
     volume: 0.3,            // 0 - 1
-    seatbeltEvery: 4000,    // ms jeda antar bunyi seatbelt
+    seatbeltEvery: 2000,    // ms jeda antar bunyi seatbelt (berulang terus sampai seatbelt dipasang)
     seatbeltMinSpeed: 1,    // m/s: seatbelt hanya bunyi saat mobil bergerak lebih cepat dari ini (0 = selalu, 1 m/s ~ 2 mph)
     fuelBelow: 0.20,        // bensin di bawah 20%
     fuelEvery: 30000,       // ms jeda antar chime bensin
